@@ -40,6 +40,11 @@ class Laporan {
   final String? statusLaporan;
   final String? isiLaporan;
 
+  // 🕒 Tambahan: Waktu status laporan
+  final String? dikirimPada;
+  final String? diverifikasiPada;
+  final String? selesaiPada;
+
   // ========== Jenis Kecelakaan ==========
   final String? jenisKecelakaan;
   final String? pihakTerkait;
@@ -79,6 +84,9 @@ class Laporan {
     this.tanggalLaporan,
     this.statusLaporan,
     this.isiLaporan,
+    this.dikirimPada,
+    this.diverifikasiPada,
+    this.selesaiPada,
     this.jenisKecelakaan,
     this.pihakTerkait,
     this.namaPelapor,
@@ -135,6 +143,11 @@ class Laporan {
       // Status & Laporan
       statusLaporan: json['status_laporan'],
       isiLaporan: json['isi_laporan'],
+
+      // 🕒 Tambahan waktu status
+      dikirimPada: json['sent_at'],
+      diverifikasiPada: json['verified_at'],
+      selesaiPada: json['completed_at'],
 
       // Kecelakaan
       jenisKecelakaan: json['jenis_kecelakaan'],
@@ -250,6 +263,9 @@ class Laporan {
     String? tanggalLaporan,
     String? statusLaporan,
     String? isiLaporan,
+    String? dikirimPada,
+    String? diverifikasiPada,
+    String? selesaiPada,
     String? jenisKecelakaan,
     String? pihakTerkait,
     String? namaPelapor,
@@ -284,6 +300,9 @@ class Laporan {
       tanggalLaporan: tanggalLaporan ?? this.tanggalLaporan,
       statusLaporan: statusLaporan ?? this.statusLaporan,
       isiLaporan: isiLaporan ?? this.isiLaporan,
+      dikirimPada: dikirimPada ?? this.dikirimPada,
+      diverifikasiPada: diverifikasiPada ?? this.diverifikasiPada,
+      selesaiPada: selesaiPada ?? this.selesaiPada,
       jenisKecelakaan: jenisKecelakaan ?? this.jenisKecelakaan,
       pihakTerkait: pihakTerkait ?? this.pihakTerkait,
       namaPelapor: namaPelapor ?? this.namaPelapor,

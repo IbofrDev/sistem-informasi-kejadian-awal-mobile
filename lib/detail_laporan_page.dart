@@ -54,8 +54,10 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
       if (!mounted) return;
       setState(() => _selectedStatus = newStatus);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Status berhasil diubah menjadi: $newStatus'),
-          backgroundColor: Colors.green),
+        SnackBar(
+          content: Text('Status berhasil diubah menjadi: $newStatus'),
+          backgroundColor: Colors.green,
+        ),
       );
     } catch (e) {
       if (!mounted) return;
@@ -83,14 +85,34 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
     }
   }
 
+  // 🔹 Format tanggal menjadi bentuk "27 Okt 2025, 14:25"
+  String _formatTanggalWaktu(String? isoString) {
+    if (isoString == null || isoString.isEmpty) return 'N/A';
+    try {
+      final dateTime = DateTime.parse(isoString).toLocal();
+      const bulan = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+        'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+      ];
+      final namaBulan = bulan[dateTime.month - 1];
+      final jam = dateTime.hour.toString().padLeft(2, '0');
+      final menit = dateTime.minute.toString().padLeft(2, '0');
+      return '${dateTime.day} $namaBulan ${dateTime.year}, $jam:$menit';
+    } catch (_) {
+      return isoString ?? '';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isLoading = _isUpdatingStatus || _isPrintingPdf;
     return Scaffold(
       backgroundColor: pageBackgroundColor,
       appBar: AppBar(
-        title: Text('Detail LK-${widget.laporanId.toString().padLeft(4, '0')}',
-            style: const TextStyle(color: primaryColor, fontWeight: FontWeight.bold)),
+        title: Text(
+          'Detail LK-${widget.laporanId.toString().padLeft(4, '0')}',
+          style: const TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.white,
         foregroundColor: primaryColor,
         elevation: 1,
@@ -128,6 +150,15 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
           }
 
           final laporan = snap.data!;
+
+          // Cetak debug ke console untuk memastikan nilai ada
+          debugPrint('[DETAIL] '
+              'jenisMuatan=${laporan.jenisMuatan}, '
+              'jumlahMuatan=${laporan.jumlahMuatan}, '
+              'jumlahPenumpang=${laporan.jumlahPenumpang}, '
+              'namaPandu=${laporan.namaPandu}, '
+              'nomorRegisterPandu=${laporan.noRegisterPandu}');
+
           return Stack(
             children: [
               SingleChildScrollView(
@@ -136,9 +167,19 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
                   children: [
                     if (widget.isAdmin) _buildAdminActionsCard(laporan),
 
+                    // === 🕒 Status & Waktu Laporan ===
+                    _buildDetailCard('Status Laporan', [
+                      _buildDetailRow('Status', laporan.statusLaporan?.toUpperCase()),
+                      if (laporan.dikirimPada != null)
+                        _buildDetailRow('Dikirim pada', _formatTanggalWaktu(laporan.dikirimPada)),
+                      if (laporan.diverifikasiPada != null)
+                        _buildDetailRow('Diverifikasi pada', _formatTanggalWaktu(laporan.diverifikasiPada)),
+                      if (laporan.selesaiPada != null)
+                        _buildDetailRow('Laporan selesai pada', _formatTanggalWaktu(laporan.selesaiPada)),
+                    ]),
+
                     // === Informasi Umum + Kapal ===
                     _buildDetailCard('Informasi Kapal', [
-                      _buildDetailRow('Status Laporan', laporan.statusLaporan?.toUpperCase()),
                       _buildDetailRow('Jenis Kapal', laporan.jenisKapal),
                       _buildDetailRow('Nama Kapal', laporan.namaKapal),
                       _buildDetailRow('Nama Kapal ke-2', laporan.namaKapalKedua),
@@ -196,7 +237,6 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
                   ],
                 ),
               ),
-
               if (isLoading)
                 Container(
                   color: Colors.black.withOpacity(0.5),
@@ -228,9 +268,10 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Tindakan Admin',
-              style: TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          const Text(
+            'Tindakan Admin',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
           const Divider(height: 20, color: Colors.white54),
           const Text('Ubah Status Laporan', style: TextStyle(color: Colors.white70)),
           const SizedBox(height: 8),
@@ -301,12 +342,15 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
         children: [
           Text(title, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
           const SizedBox(height: 4),
-          Text(value == null || value.isEmpty ? 'N/A' : value,
-              textAlign: TextAlign.justify,
-              style: TextStyle(
-                  fontSize: 15,
-                  color: Colors.black87,
-                  height: isMultiline ? 1.5 : 1.2)),
+          Text(
+            value == null || value.isEmpty ? 'N/A' : value,
+            textAlign: TextAlign.justify,
+            style: TextStyle(
+              fontSize: 15,
+              color: Colors.black87,
+              height: isMultiline ? 1.5 : 1.2,
+            ),
+          ),
         ],
       ),
     );
@@ -334,9 +378,7 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
                 l.url,
                 fit: BoxFit.cover,
                 loadingBuilder: (ctx, child, progress) =>
-                    progress == null
-                        ? child
-                        : const Center(child: CircularProgressIndicator()),
+                    progress == null ? child : const Center(child: CircularProgressIndicator()),
                 errorBuilder: (ctx, err, st) => Container(
                   color: Colors.grey[200],
                   child: const Icon(Icons.broken_image),

@@ -9,7 +9,7 @@ class ApiService {
   final Dio _dio;
 
   // ⚙️ Ganti baseUrl sesuai alamat server Laravel kamu
-  static const String _baseUrl = 'http://172.10.10.223:9000/api';
+  static const String _baseUrl = 'http://10.253.15.176:9000/api';
 
   ApiService()
       : _dio = Dio(
@@ -194,10 +194,25 @@ class ApiService {
     }
   }
 
+  // ===============================================================
+  // 🔹 Diperbarui bagian ini
+  // ===============================================================
   Future<Laporan> getLaporanDetail(int laporanId) async {
     try {
       final response = await _dio.get('/laporan/$laporanId');
-      return Laporan.fromJson(response.data, baseUrl: _dio.options.baseUrl);
+      print('🧾 RESPONSE DETAIL LAPORAN: ${response.data}');
+      final raw = response.data;
+
+      // Perbaikan: tangani kemungkinan data dikemas dalam key "data"
+      final laporanData =
+          (raw is Map && raw.containsKey('laporan'))
+              ? raw['laporan']
+              : (raw is Map && raw.containsKey('data'))
+                  ? raw['data']
+                  : raw;
+
+      print('🧾 PARSED LAPORAN DATA: $laporanData');
+      return Laporan.fromJson(laporanData, baseUrl: _dio.options.baseUrl);
     } on DioException catch (e) {
       throw Exception(_handleError(e));
     }
@@ -206,11 +221,20 @@ class ApiService {
   // ===============================================================
   // 👑 ADMIN SECTION
   // ===============================================================
-
   Future<Laporan> getLaporanDetailForAdmin(int laporanId) async {
     try {
       final response = await _dio.get('/admin/laporan/$laporanId');
-      return Laporan.fromJson(response.data, baseUrl: _dio.options.baseUrl);
+
+      // Perbaikan: tangani kemungkinan data dikemas dalam key "data"
+      final raw = response.data;
+      final laporanData =
+          (raw is Map && raw.containsKey('laporan'))
+              ? raw['laporan']
+              : (raw is Map && raw.containsKey('data'))
+                  ? raw['data']
+                  : raw;
+
+      return Laporan.fromJson(laporanData, baseUrl: _dio.options.baseUrl);
     } on DioException catch (e) {
       throw Exception(_handleError(e));
     }
