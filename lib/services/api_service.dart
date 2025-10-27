@@ -1,30 +1,33 @@
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/laporan.dart';
 import '../models/user.dart';
 
 class ApiService {
   final Dio _dio;
-  static const String _baseUrl =
-      'http://10.234.153.176:9000/api'; // ganti sesuai servermu
+
+  // ⚙️ Ganti baseUrl sesuai alamat server Laravel kamu
+  static const String _baseUrl = 'http://172.10.10.223:9000/api';
 
   ApiService()
       : _dio = Dio(
           BaseOptions(
             baseUrl: _baseUrl,
             connectTimeout: const Duration(seconds: 30),
+            receiveTimeout: const Duration(seconds: 30),
           ),
         ) {
     _dio.interceptors.add(
       InterceptorsWrapper(onRequest: (options, handler) async {
-        // Tambahkan Authorization header kecuali saat login/register
+        // Tambahkan Authorization header otomatis ke semua request kecuali login/register
         if (!options.path.contains('/login') &&
             !options.path.contains('/register')) {
           final token = await getToken();
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
-            print('📡 Authorization header ditambahkan: Bearer $token');
+            print('📡 Authorization ditambahkan: Bearer $token');
           } else {
             print('⚠️ Token tidak ditemukan, permintaan tanpa autentikasi.');
           }
@@ -41,32 +44,25 @@ class ApiService {
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
-      final response = await _dio.post(
-        '/login',
-        data: {'email': email, 'password': password},
-      );
+      final response =
+          await _dio.post('/login', data: {'email': email, 'password': password});
 
-      // Periksa kode status dari backend
       if (response.statusCode != 200) {
         throw Exception('Login gagal: ${response.data['message']}');
       }
 
-      // Debug respons
       print('🧾 LOGIN response: ${response.data}');
 
-      // Simpan token hanya jika login sukses
       final token = response.data['access_token'] ??
           response.data['token'] ??
           response.data['plainTextToken'] ??
           '';
-      if (token.isEmpty) {
-        throw Exception('Token tidak ditemukan.');
-      }
+
+      if (token.isEmpty) throw Exception('Token tidak ditemukan.');
 
       await saveToken(token);
       return response.data;
     } on DioException catch (e) {
-      // Tangani error 401 dari backend Laravel
       if (e.response?.statusCode == 401) {
         throw Exception('Email atau password salah.');
       }
@@ -77,13 +73,12 @@ class ApiService {
   Future<Map<String, dynamic>> register(Map<String, String> data) async {
     try {
       final response = await _dio.post('/register', data: data);
-
       print('🧾 REGISTER response: ${response.data}');
       final token = response.data['access_token'] ??
           response.data['token'] ??
           response.data['plainTextToken'] ??
           '';
-      await saveToken(token);
+      if (token.isNotEmpty) await saveToken(token);
       return response.data;
     } on DioException catch (e) {
       throw Exception(_handleError(e));
@@ -94,7 +89,6 @@ class ApiService {
     try {
       final response = await _dio.get('/user');
 
-      // ✅ Pastikan server merespons sukses
       if (response.statusCode != 200 || response.data == null) {
         throw Exception('Gagal mengambil data pengguna (token tidak valid).');
       }
@@ -105,7 +99,6 @@ class ApiService {
       }
       return User.fromJson(data);
     } on DioException catch (e) {
-      // Jika token invalid, hapuskan agar tidak tersangkut
       if (e.response?.statusCode == 401) {
         await clearToken();
         throw Exception('Token tidak valid atau sudah kedaluwarsa.');
@@ -133,7 +126,7 @@ class ApiService {
   Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('auth_token', token);
-    print('💾 Token berhasil disimpan: $token');
+    print('💾 Token disimpan: $token');
   }
 
   Future<String?> getToken() async {
@@ -144,7 +137,7 @@ class ApiService {
   Future<void> clearToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
-    print('🧹 Token dihapus dari penyimpanan.');
+    print('🧹 Token dihapus.');
   }
 
   // ===============================================================
@@ -156,17 +149,19 @@ class ApiService {
       final response = await _dio.get('/laporan');
       final data = response.data;
 
+      // Laravel sekarang mengirim array JSON langsung
       if (data is List) {
-        return data.map((item) => Laporan.fromJson(item)).toList();
+        return data.map((json) => Laporan.fromJson(json)).toList();
       }
 
-      if (data is Map<String, dynamic>) {
-        final List<dynamic>? list = data['data'];
-        if (list != null) {
-          return list.map((item) => Laporan.fromJson(item)).toList();
-        }
+      // Jika API mengirim berbentuk { data: [...] }
+      if (data is Map && data['data'] is List) {
+        return (data['data'] as List)
+            .map((json) => Laporan.fromJson(json))
+            .toList();
       }
 
+      // Jika bukan salah satu di atas
       throw Exception('Format respons laporan tidak dikenali.');
     } on DioException catch (e) {
       throw Exception(_handleError(e));
@@ -174,11 +169,13 @@ class ApiService {
   }
 
   Future<void> createReport(
-      Map<String, String> data, List<XFile> lampiran) async {
+    Map<String, String> data,
+    List<XFile> lampiran,
+  ) async {
     try {
-      final formData = FormData.fromMap(data);
+      final formData = FormData.fromMap({...data});
 
-      for (var file in lampiran) {
+      for (final file in lampiran) {
         formData.files.add(MapEntry(
           'lampiran[]',
           await MultipartFile.fromFile(file.path, filename: file.name),
@@ -186,10 +183,11 @@ class ApiService {
       }
 
       final response = await _dio.post('/laporan', data: formData);
+
       if (response.statusCode == 201 || response.statusCode == 200) {
-        print("✅ Laporan dan lampiran dikirim (${lampiran.length} file)!");
+        print('✅ Laporan berhasil dikirim (${lampiran.length} lampiran)');
       } else {
-        print("⚠️ Respons tidak terduga: ${response.statusCode}");
+        print('⚠️ Respons tidak terduga (${response.statusCode})');
       }
     } on DioException catch (e) {
       throw Exception(_handleError(e));
@@ -206,7 +204,7 @@ class ApiService {
   }
 
   // ===============================================================
-  // 👑 ADMIN SECTION (LENGKAP)
+  // 👑 ADMIN SECTION
   // ===============================================================
 
   Future<Laporan> getLaporanDetailForAdmin(int laporanId) async {
@@ -224,7 +222,7 @@ class ApiService {
         '/admin/laporan/$laporanId/status',
         data: {'status_laporan': status},
       );
-      print("📝 Status laporan $laporanId diperbarui ke $status");
+      print('📝 Status laporan $laporanId diperbarui ke $status');
     } on DioException catch (e) {
       throw Exception(_handleError(e));
     }
@@ -234,7 +232,7 @@ class ApiService {
     try {
       final response = await _dio.get('/admin/pelapor/$userId/laporan');
       final List<dynamic> body = response.data;
-      return body.map((item) => Laporan.fromJson(item)).toList();
+      return body.map((json) => Laporan.fromJson(json)).toList();
     } on DioException catch (e) {
       throw Exception(_handleError(e));
     }
@@ -244,7 +242,7 @@ class ApiService {
     try {
       final response = await _dio.get('/admin/pelapor');
       final List<dynamic> body = response.data;
-      return body.map((item) => User.fromJson(item)).toList();
+      return body.map((json) => User.fromJson(json)).toList();
     } on DioException catch (e) {
       throw Exception(_handleError(e));
     }
@@ -252,9 +250,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> getAdminDashboardData({String? status}) async {
     try {
-      final queryParams = {
-        if (status != null) 'status': status,
-      };
+      final queryParams = {if (status != null) 'status': status};
       final response =
           await _dio.get('/admin/laporan', queryParameters: queryParams);
       final List<dynamic> reports = response.data;
@@ -283,7 +279,7 @@ class ApiService {
         '/admin/users/$userId/reset-password',
         data: {'password': newPassword},
       );
-      print("🔑 Password user $userId telah direset.");
+      print('🔑 Password user $userId berhasil direset.');
     } on DioException catch (e) {
       throw Exception(_handleError(e));
     }
@@ -292,7 +288,7 @@ class ApiService {
   Future<void> updateUserData(int userId, Map<String, String?> data) async {
     try {
       await _dio.put('/admin/users/$userId', data: data);
-      print("⚙️ Data user $userId diperbarui.");
+      print('⚙️ Data user $userId diperbarui.');
     } on DioException catch (e) {
       throw Exception(_handleError(e));
     }
@@ -306,7 +302,7 @@ class ApiService {
     String message = 'Terjadi kesalahan tidak diketahui.';
 
     if (e.response != null && e.response?.data is Map) {
-      final data = e.response?.data;
+      final data = e.response?.data as Map;
       message = data['message'] ?? message;
 
       if (data['errors'] != null && data['errors'] is Map) {
