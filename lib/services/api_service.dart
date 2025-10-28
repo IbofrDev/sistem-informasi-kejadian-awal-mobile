@@ -5,11 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/laporan.dart';
 import '../models/user.dart';
 
-class ApiService {
+class ApiService { 
   final Dio _dio;
 
   // ⚙️ Ganti baseUrl sesuai alamat server Laravel kamu
-  static const String _baseUrl = 'http://10.253.15.176:9000/api';
+  static const String _baseUrl = 'http://172.10.10.226:9000/api';
 
   ApiService()
       : _dio = Dio(

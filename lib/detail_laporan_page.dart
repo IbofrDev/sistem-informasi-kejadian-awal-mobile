@@ -29,7 +29,11 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
 
   static const Color primaryColor = Color(0xFF005A9C);
   static const Color pageBackgroundColor = Color(0xFFF5F5F5);
-  static const List<String> _statusOptions = ['Dikirim', 'Diverifikasi', 'Selesai'];
+  static const List<String> _statusOptions = [
+    'Dikirim',
+    'Diverifikasi',
+    'Selesai'
+  ];
 
   @override
   void initState() {
@@ -62,7 +66,9 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal mengubah status: $e'), backgroundColor: Colors.red),
+        SnackBar(
+            content: Text('Gagal mengubah status: $e'),
+            backgroundColor: Colors.red),
       );
     } finally {
       if (mounted) setState(() => _isUpdatingStatus = false);
@@ -91,8 +97,18 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
     try {
       final dateTime = DateTime.parse(isoString).toLocal();
       const bulan = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-        'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'Mei',
+        'Jun',
+        'Jul',
+        'Agu',
+        'Sep',
+        'Okt',
+        'Nov',
+        'Des'
       ];
       final namaBulan = bulan[dateTime.month - 1];
       final jam = dateTime.hour.toString().padLeft(2, '0');
@@ -111,7 +127,8 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
       appBar: AppBar(
         title: Text(
           'Detail LK-${widget.laporanId.toString().padLeft(4, '0')}',
-          style: const TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+          style:
+              const TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
         foregroundColor: primaryColor,
@@ -128,7 +145,8 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
                 return IconButton(
                   icon: const Icon(Icons.print_outlined, color: primaryColor),
                   tooltip: 'Cetak Laporan',
-                  onPressed: isLoading ? null : () => _cetakLaporanKePdf(snap.data!),
+                  onPressed:
+                      isLoading ? null : () => _cetakLaporanKePdf(snap.data!),
                 );
               }
               return const SizedBox.shrink();
@@ -140,7 +158,8 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
         future: _laporanFuture,
         builder: (context, snap) {
           if (snap.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: primaryColor));
+            return const Center(
+                child: CircularProgressIndicator(color: primaryColor));
           }
           if (snap.hasError) {
             return Center(child: Text('Gagal memuat data: ${snap.error}'));
@@ -169,30 +188,52 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
 
                     // === 🕒 Status & Waktu Laporan ===
                     _buildDetailCard('Status Laporan', [
-                      _buildDetailRow('Status', laporan.statusLaporan?.toUpperCase()),
-                      if (laporan.dikirimPada != null)
-                        _buildDetailRow('Dikirim pada', _formatTanggalWaktu(laporan.dikirimPada)),
-                      if (laporan.diverifikasiPada != null)
-                        _buildDetailRow('Diverifikasi pada', _formatTanggalWaktu(laporan.diverifikasiPada)),
-                      if (laporan.selesaiPada != null)
-                        _buildDetailRow('Laporan selesai pada', _formatTanggalWaktu(laporan.selesaiPada)),
+                      _buildDetailRow(
+                          'Status', laporan.statusLaporan?.toUpperCase()),
+
+                      // tampil selalu, gunakan "-" kalau kosong
+                      _buildDetailRow(
+                        'Dikirim pada',
+                        (laporan.dikirimPada == null ||
+                                laporan.dikirimPada!.isEmpty)
+                            ? '-'
+                            : _formatTanggalWaktu(laporan.dikirimPada),
+                      ),
+                      _buildDetailRow(
+                        'Diverifikasi pada',
+                        (laporan.diverifikasiPada == null ||
+                                laporan.diverifikasiPada!.isEmpty)
+                            ? '-'
+                            : _formatTanggalWaktu(laporan.diverifikasiPada),
+                      ),
+                      _buildDetailRow(
+                        'Laporan selesai diproses pada',
+                        (laporan.selesaiPada == null ||
+                                laporan.selesaiPada!.isEmpty)
+                            ? '-'
+                            : _formatTanggalWaktu(laporan.selesaiPada),
+                      ),
                     ]),
 
                     // === Informasi Umum + Kapal ===
                     _buildDetailCard('Informasi Kapal', [
                       _buildDetailRow('Jenis Kapal', laporan.jenisKapal),
                       _buildDetailRow('Nama Kapal', laporan.namaKapal),
-                      _buildDetailRow('Nama Kapal ke-2', laporan.namaKapalKedua),
+                      _buildDetailRow(
+                          'Nama Kapal ke-2', laporan.namaKapalKedua),
                       _buildDetailRow('Bendera Kapal', laporan.benderaKapal),
-                      _buildDetailRow('Gross Tonnage (GT)', laporan.grtKapal?.toString()),
+                      _buildDetailRow(
+                          'Gross Tonnage (GT)', laporan.grtKapal?.toString()),
                       _buildDetailRow('IMO Number', laporan.imoNumber),
                     ]),
 
                     // === Rute Perjalanan ===
                     _buildDetailCard('Rute Perjalanan', [
                       _buildDetailRow('Pelabuhan Asal', laporan.pelabuhanAsal),
-                      _buildDetailRow('Waktu Berangkat', laporan.waktuBerangkat),
-                      _buildDetailRow('Pelabuhan Tujuan', laporan.pelabuhanTujuan),
+                      _buildDetailRow(
+                          'Waktu Berangkat', laporan.waktuBerangkat),
+                      _buildDetailRow(
+                          'Pelabuhan Tujuan', laporan.pelabuhanTujuan),
                       _buildDetailRow('Estimasi Tiba', laporan.estimasiTiba),
                     ]),
 
@@ -203,33 +244,42 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
                       _buildDetailRow('Agen Lokal', laporan.agenLokal),
                       _buildDetailRow('Kontak Agen', laporan.kontakAgen),
                       _buildDetailRow('Nama Pandu', laporan.namaPandu),
-                      _buildDetailRow('Nomor Register Pandu', laporan.noRegisterPandu),
+                      _buildDetailRow(
+                          'Nomor Register Pandu', laporan.noRegisterPandu),
                     ]),
 
                     // === Muatan & Penumpang ===
                     _buildDetailCard('Muatan & Penumpang', [
                       _buildDetailRow('Jenis Muatan', laporan.jenisMuatan),
-                      _buildDetailRow('Jumlah Muatan', laporan.jumlahMuatan?.toString()),
-                      _buildDetailRow('Jumlah Penumpang', laporan.jumlahPenumpang?.toString()),
+                      _buildDetailRow(
+                          'Jumlah Muatan', laporan.jumlahMuatan?.toString()),
+                      _buildDetailRow('Jumlah Penumpang',
+                          laporan.jumlahPenumpang?.toString()),
                     ]),
 
                     // === Lokasi Kejadian ===
                     _buildDetailCard('Lokasi Kejadian', [
                       _buildDetailRow('Posisi Lintang', laporan.posisiLintang),
                       _buildDetailRow('Posisi Bujur', laporan.posisiBujur),
-                      _buildDetailRow('Tanggal Laporan', laporan.tanggalLaporan),
+                      _buildDetailRow(
+                          'Tanggal Laporan', laporan.tanggalLaporan),
                     ]),
 
                     // === Uraian ===
                     _buildDetailCard('Uraian Kejadian', [
-                      _buildDetailRow('Kronologi / Deskripsi', laporan.isiLaporan, isMultiline: true),
+                      _buildDetailRow(
+                          'Kronologi / Deskripsi', laporan.isiLaporan,
+                          isMultiline: true),
                     ]),
 
                     // === Informasi Pelapor ===
                     _buildDetailCard('Informasi Pelapor', [
-                      _buildDetailRow('Nama', laporan.user?.nama ?? laporan.namaPelapor),
-                      _buildDetailRow('Jabatan', laporan.user?.jabatan ?? laporan.jabatanPelapor),
-                      _buildDetailRow('Telepon', laporan.user?.phoneNumber ?? laporan.teleponPelapor),
+                      _buildDetailRow(
+                          'Nama', laporan.user?.nama ?? laporan.namaPelapor),
+                      _buildDetailRow('Jabatan',
+                          laporan.user?.jabatan ?? laporan.jabatanPelapor),
+                      _buildDetailRow('Telepon',
+                          laporan.user?.phoneNumber ?? laporan.teleponPelapor),
                     ]),
 
                     // === Lampiran ===
@@ -246,7 +296,8 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
                       children: [
                         CircularProgressIndicator(color: Colors.white),
                         SizedBox(height: 16),
-                        Text('Memproses...', style: TextStyle(color: Colors.white)),
+                        Text('Memproses...',
+                            style: TextStyle(color: Colors.white)),
                       ],
                     ),
                   ),
@@ -270,10 +321,12 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text(
             'Tindakan Admin',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(
+                fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const Divider(height: 20, color: Colors.white54),
-          const Text('Ubah Status Laporan', style: TextStyle(color: Colors.white70)),
+          const Text('Ubah Status Laporan',
+              style: TextStyle(color: Colors.white70)),
           const SizedBox(height: 8),
           AbsorbPointer(
             absorbing: _isUpdatingStatus,
@@ -284,7 +337,8 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Theme(
-                data: Theme.of(context).copyWith(canvasColor: const Color(0xFF004a80)),
+                data: Theme.of(context)
+                    .copyWith(canvasColor: const Color(0xFF004a80)),
                 child: DropdownButton<String>(
                   value: _selectedStatus,
                   isExpanded: true,
@@ -292,7 +346,8 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
                   iconEnabledColor: Colors.white,
                   style: const TextStyle(color: Colors.white, fontSize: 16),
                   items: _statusOptions
-                      .map((s) => DropdownMenuItem(value: s.toLowerCase(), child: Text(s)))
+                      .map((s) => DropdownMenuItem(
+                          value: s.toLowerCase(), child: Text(s)))
                       .toList(),
                   onChanged: (newVal) {
                     if (newVal != null && newVal != _selectedStatus) {
@@ -334,7 +389,8 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
     );
   }
 
-  Widget _buildDetailRow(String title, String? value, {bool isMultiline = false}) {
+  Widget _buildDetailRow(String title, String? value,
+      {bool isMultiline = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Column(
@@ -359,7 +415,8 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
   Widget _buildLampiranCard(Laporan laporan) {
     return _buildDetailCard('Lampiran', [
       if (laporan.lampiran.isEmpty)
-        const Text('Tidak ada lampiran.', style: TextStyle(color: Colors.black54))
+        const Text('Tidak ada lampiran.',
+            style: TextStyle(color: Colors.black54))
       else
         GridView.builder(
           shrinkWrap: true,
@@ -377,8 +434,9 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
               child: Image.network(
                 l.url,
                 fit: BoxFit.cover,
-                loadingBuilder: (ctx, child, progress) =>
-                    progress == null ? child : const Center(child: CircularProgressIndicator()),
+                loadingBuilder: (ctx, child, progress) => progress == null
+                    ? child
+                    : const Center(child: CircularProgressIndicator()),
                 errorBuilder: (ctx, err, st) => Container(
                   color: Colors.grey[200],
                   child: const Icon(Icons.broken_image),
