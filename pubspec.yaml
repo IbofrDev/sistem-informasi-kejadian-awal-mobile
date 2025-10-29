@@ -9,7 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  
+  file_picker: ^8.1.2
   # Paket yang kita butuhkan
   http: ^1.2.1
   dio: ^5.4.3+1

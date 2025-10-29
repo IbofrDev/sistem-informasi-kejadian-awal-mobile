@@ -265,6 +265,21 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
                           'Tanggal Laporan', laporan.tanggalLaporan),
                     ]),
 
+                    // === 🔹 Jenis Kecelakaan ===
+                    if (laporan.jenisKecelakaan != null &&
+                        laporan.jenisKecelakaan!.isNotEmpty)
+                      _buildDetailCard('Detail Kecelakaan', [
+                        _buildDetailRow(
+                            'Jenis Kecelakaan', laporan.jenisKecelakaan),
+                        _buildDetailRow(
+                          'Pihak Terkait',
+                          (laporan.pihakTerkait == null ||
+                                  laporan.pihakTerkait!.isEmpty)
+                              ? '-'
+                              : laporan.pihakTerkait,
+                        ),
+                      ]),
+
                     // === Uraian ===
                     _buildDetailCard('Uraian Kejadian', [
                       _buildDetailRow(

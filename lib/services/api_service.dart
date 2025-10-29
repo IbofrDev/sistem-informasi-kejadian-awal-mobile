@@ -9,7 +9,7 @@ class ApiService {
   final Dio _dio;
 
   // ⚙️ Ganti baseUrl sesuai alamat server Laravel kamu
-  static const String _baseUrl = 'http://172.10.10.226:9000/api';
+  static const String _baseUrl = 'http://36.76.75.75:9000/api';
 
   ApiService()
       : _dio = Dio(
