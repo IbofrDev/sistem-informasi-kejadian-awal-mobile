@@ -223,6 +223,18 @@ class _CreateReportPageState extends State<CreateReportPage> {
 
   Future<void> _submitReport(BuildContext context) async {
     if (!_formKey.currentState!.validate()) return;
+
+    // ✅ Tambahkan pengecekan lampiran wajib
+    if (_lampiranFiles.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Lampiran wajib diunggah minimal 1 file."),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSending = true);
     final provider = Provider.of<LaporanProvider>(context, listen: false);
     final data = _collectFormData();
@@ -233,12 +245,14 @@ class _CreateReportPageState extends State<CreateReportPage> {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("✅ Laporan berhasil dikirim")));
+        const SnackBar(content: Text("✅ Laporan berhasil dikirim")),
+      );
       Navigator.pop(context);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(provider.errorMessage ?? "Gagal mengirim laporan."),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(provider.errorMessage ?? "Gagal mengirim laporan.")),
+      );
     }
   }
 

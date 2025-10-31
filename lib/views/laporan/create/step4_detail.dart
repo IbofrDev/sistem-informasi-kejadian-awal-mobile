@@ -474,6 +474,15 @@ class _Step4DetailState extends State<Step4Detail> {
         InfoCard(
           title: 'Lampiran',
           children: [
+            if (widget.lampiranFiles.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  'Minimal 1 file lampiran harus diunggah sebelum mengirim laporan.',
+                  style: TextStyle(
+                      color: Colors.red[700], fontWeight: FontWeight.bold),
+                ),
+              ),
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
