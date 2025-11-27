@@ -64,12 +64,27 @@ class AuthProvider with ChangeNotifier {
         'password': password,
       });
 
+      // ✅ VALIDASI RESPONSE
+      if (response['user'] == null) {
+        throw Exception('Data user tidak valid');
+      }
+
       _user = User.fromJson(response['user']);
+
+      // ✅ CEK APAKAH USER BERHASIL DIBUAT
+      if (_user == null || _user!.id == 0) {
+        throw Exception('Gagal membuat user');
+      }
+
       _isAuthenticated = true;
+      _errorMessage = null;
+      print('✅ Registrasi berhasil: ${_user!.nama}');
       return true;
     } catch (e) {
-      _errorMessage = 'Registrasi gagal: ${e.toString()}';
+      print('❌ Error registrasi: ${e.toString()}');
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
       _isAuthenticated = false;
+      _user = null;
       return false;
     } finally {
       _isLoading = false;

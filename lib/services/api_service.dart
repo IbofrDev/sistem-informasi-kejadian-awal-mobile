@@ -71,19 +71,55 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> register(Map<String, String> data) async {
-    try {
-      final response = await _dio.post('/register', data: data);
-      print('🧾 REGISTER response: ${response.data}');
-      final token = response.data['access_token'] ??
-          response.data['token'] ??
-          response.data['plainTextToken'] ??
-          '';
-      if (token.isNotEmpty) await saveToken(token);
-      return response.data;
-    } on DioException catch (e) {
-      throw Exception(_handleError(e));
+  try {
+    final response = await _dio.post('/register', data: data);
+    print('🧾 REGISTER response: ${response.data}');
+    print('📊 Status Code: ${response.statusCode}');
+
+    // ✅ CEK STATUS CODE
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      // Jika bukan success, throw error
+      final errorMsg = response.data['message'] ?? 'Registrasi gagal';
+      throw Exception(errorMsg);
     }
+
+    // ✅ CEK APAKAH ADA TOKEN
+    final token = response.data['access_token'] ??
+        response.data['token'] ??
+        response.data['plainTextToken'] ??
+        '';
+
+    if (token.isEmpty) {
+      throw Exception('Token tidak ditemukan dalam respons');
+    }
+
+    // ✅ CEK APAKAH ADA DATA USER
+    if (response.data['user'] == null) {
+      throw Exception('Data user tidak ditemukan dalam respons');
+    }
+
+    await saveToken(token);
+    return response.data;
+  } on DioException catch (e) {
+    // ✅ HANDLE VALIDATION ERROR (422)
+    if (e.response?.statusCode == 422) {
+      final errors = e.response?.data['errors'];
+      if (errors != null && errors is Map) {
+        // Ambil error pertama
+        final firstError = errors.values.first;
+        if (firstError is List && firstError.isNotEmpty) {
+          throw Exception(firstError[0]);
+        }
+      }
+      throw Exception(e.response?.data['message'] ?? 'Validasi gagal');
+    }
+    throw Exception(_handleError(e));
+  } catch (e) {
+    // ✅ HANDLE ERROR LAINNYA
+    if (e is Exception) rethrow;
+    throw Exception('Registrasi gagal: ${e.toString()}');
   }
+}
 
   Future<User> getUser() async {
     try {

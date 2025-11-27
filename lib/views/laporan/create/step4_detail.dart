@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
@@ -474,15 +475,6 @@ class _Step4DetailState extends State<Step4Detail> {
         InfoCard(
           title: 'Lampiran',
           children: [
-            if (widget.lampiranFiles.isEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text(
-                  'Minimal 1 file lampiran harus diunggah sebelum mengirim laporan.',
-                  style: TextStyle(
-                      color: Colors.red[700], fontWeight: FontWeight.bold),
-                ),
-              ),
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -524,58 +516,57 @@ class _Step4DetailState extends State<Step4Detail> {
                     ext == '.gif';
                 final isDoc = ext == '.pdf' || ext == '.doc' || ext == '.docx';
                 file.path.endsWith('.mp4') || file.path.endsWith('.mov');
-                return Stack(children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      image: isVideo
-                          ? null
-                          : DecorationImage(
-                              image: FileImage(File(file.path)),
-                              fit: BoxFit.cover,
-                            ),
-                      color: isVideo ? Colors.black : Colors.transparent,
-                    ),
-                    child: isVideo
-                        ? const Center(
-                            child: Icon(Icons.play_circle_fill,
-                                color: Colors.white, size: 40))
-                        : null,
-                  ),
-                  Positioned(
-                    top: 4,
-                    right: 4,
-                    child: InkWell(
-                      onTap: () => _removeAttachment(index),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          color: Colors.grey[200],
-                          image: isImage
-                              ? DecorationImage(
-                                  image: FileImage(File(file.path)),
-                                  fit: BoxFit.cover,
-                                )
-                              : null,
-                        ),
-                        child: !isImage
-                            ? Center(
-                                child: Icon(
-                                  isVideo
-                                      ? Icons.play_circle_fill
-                                      : (isDoc
-                                          ? Icons.insert_drive_file
-                                          : Icons.description),
-                                  color:
-                                      isVideo ? Colors.white : Colors.grey[700],
-                                  size: 40,
-                                ),
+                return Stack(
+                  children: [
+                    // --- Preview gambar/video/dokumen ---
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.grey[200],
+                        image: isImage
+                            ? DecorationImage(
+                                image: FileImage(File(file.path)),
+                                fit: BoxFit.cover,
                               )
                             : null,
                       ),
+                      child: isVideo
+                          ? const Center(
+                              child: Icon(Icons.play_circle_fill,
+                                  color: Colors.white, size: 40))
+                          : (isDoc
+                              ? const Center(
+                                  child: Icon(Icons.insert_drive_file,
+                                      color: Colors.blueGrey, size: 40),
+                                )
+                              : null),
                     ),
-                  )
-                ]);
+
+                    // --- Tombol silang hapus file ---
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: GestureDetector(
+                        onTap: () {
+                          HapticFeedback.vibrate(); // ✅ Efek getar saat ditekan
+                          _removeAttachment(index); // ✅ Hapus file dari list
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
               },
             ),
           ],

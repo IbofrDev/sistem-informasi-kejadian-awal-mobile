@@ -27,18 +27,21 @@ class _RegisterPageState extends State<RegisterPage> {
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _jabatanLainnyaController =
+      TextEditingController(); // 🆕 Controller untuk input manual
 
   String? _selectedJabatan;
   String? _selectedJenisKapal;
   bool _isLoading = false;
   bool _passwordVisible = false;
 
-  // Daftar opsi dropdown
+  // 🆕 Daftar opsi dropdown dengan tambahan "Lainnya"
   final List<String> _jabatanOptions = [
     'Master/Nakhoda',
     'C/O (Chief Officer)',
     '2nd Officer',
-    '3rd Officer'
+    '3rd Officer',
+    'Lainnya', // 🆕 Opsi baru
   ];
 
   final List<String> _jenisKapalOptions = [
@@ -53,34 +56,57 @@ class _RegisterPageState extends State<RegisterPage> {
     'KLM (Kapal Layar Motor / Yacht)'
   ];
 
+  // 🆕 Helper untuk cek apakah "Lainnya" dipilih
+  bool get _isJabatanLainnya => _selectedJabatan == 'Lainnya';
+
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
+
     setState(() => _isLoading = true);
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
+    // Tentukan value jabatan
+    String jabatanValue = _isJabatanLainnya
+        ? _jabatanLainnyaController.text.trim()
+        : _selectedJabatan!;
+
     try {
-      await authProvider.register(
-        nama: _namaController.text,
-        pt: _ptController.text,
-        jabatan: _selectedJabatan!,
+      final success = await authProvider.register(
+        nama: _namaController.text.trim(),
+        pt: _ptController.text.trim(),
+        jabatan: jabatanValue,
         jenisKapal: _selectedJenisKapal!,
-        phoneNumber: _phoneController.text,
-        email: _emailController.text,
-        password: _passwordController.text,
+        phoneNumber: _phoneController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
 
-      if (mounted) {
+      if (!mounted) return;
+
+      // ✅ CEK APAKAH REGISTRASI BERHASIL
+      if (success) {
+        // Navigate ke dashboard
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const DashboardPage()),
+        );
+      } else {
+        // Tampilkan error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authProvider.errorMessage ?? 'Registrasi gagal'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Registrasi Gagal: ${e.toString()}'),
+            content: Text('Error: ${e.toString()}'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -96,6 +122,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _phoneController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _jabatanLainnyaController.dispose(); // 🆕 Dispose controller baru
     super.dispose();
   }
 
@@ -162,9 +189,30 @@ class _RegisterPageState extends State<RegisterPage> {
                   labelText: 'Jabatan',
                   icon: Icons.work_outline,
                   items: _jabatanOptions,
-                  onChanged: (v) => setState(() => _selectedJabatan = v),
+                  onChanged: (v) {
+                    setState(() {
+                      _selectedJabatan = v;
+                      // 🆕 Reset input manual jika pindah dari "Lainnya"
+                      if (v != 'Lainnya') {
+                        _jabatanLainnyaController.clear();
+                      }
+                    });
+                  },
                   validator: (v) => v == null ? 'Jabatan harus dipilih' : null,
                 ),
+
+                // 🆕 TextField Input Manual (muncul jika pilih "Lainnya")
+                if (_isJabatanLainnya) ...[
+                  const SizedBox(height: spacing),
+                  _buildTextField(
+                    controller: _jabatanLainnyaController,
+                    labelText: 'Masukkan Jabatan Anda',
+                    icon: Icons.edit_outlined,
+                    validator: (v) => v == null || v.trim().isEmpty
+                        ? 'Jabatan tidak boleh kosong'
+                        : null,
+                  ),
+                ],
                 const SizedBox(height: spacing),
 
                 // ====== Dropdown Jenis Kapal ======
@@ -323,7 +371,8 @@ class _RegisterPageState extends State<RegisterPage> {
       validator: validator,
       keyboardType: keyboardType,
       obscureText: obscureText,
-      style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w500),
+      style:
+          const TextStyle(color: Colors.black87, fontWeight: FontWeight.w500),
       decoration: _inputDecoration(labelText, icon, suffixIcon: suffixIcon),
     );
   }

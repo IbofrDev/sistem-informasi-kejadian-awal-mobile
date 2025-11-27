@@ -37,11 +37,11 @@ class Step3Muatan extends StatelessWidget {
                     (v == null || v.isEmpty) ? 'Jumlah muatan wajib diisi' : null,
               ),
               CustomTextField(
-                label: 'Jumlah Penumpang *',
+                label: 'Jumlah Kru & Penumpang  *',
                 controller: jumlahPenumpangController,
                 keyboardType: TextInputType.number,
                 validator: (v) => (v == null || v.isEmpty)
-                    ? 'Jumlah penumpang wajib diisi'
+                    ? 'Jumlah Kru & Penumpang wajib diisi'
                     : null,
               ),
             ],
