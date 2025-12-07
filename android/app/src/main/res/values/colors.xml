@@ -1,5 +1,5 @@
 <resources>
     <!-- warna lain mungkin sudah ada -->
     <color name="splash_background">#0D214F</color> <!-- warna biru tua -->
-	<color name="ic_launcher_background">#0D214F</color>
+	<color name="ic_launcher_background">#FFFFFF</color>
 </resources>

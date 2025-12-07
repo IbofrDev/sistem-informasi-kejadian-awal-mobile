@@ -5,11 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/laporan.dart';
 import '../models/user.dart';
 
-class ApiService { 
+class ApiService {
   final Dio _dio;
 
   // ⚙️ Ganti baseUrl sesuai alamat server Laravel kamu
- static const String _baseUrl = 'https://kecelakaankapal.my.id/api';
+  static const String _baseUrl = 'https://kecelakaankapal.my.id/api';
 
   ApiService()
       : _dio = Dio(
@@ -44,8 +44,8 @@ class ApiService {
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
-      final response =
-          await _dio.post('/login', data: {'email': email, 'password': password});
+      final response = await _dio
+          .post('/login', data: {'email': email, 'password': password});
 
       if (response.statusCode != 200) {
         throw Exception('Login gagal: ${response.data['message']}');
@@ -71,55 +71,55 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> register(Map<String, String> data) async {
-  try {
-    final response = await _dio.post('/register', data: data);
-    print('🧾 REGISTER response: ${response.data}');
-    print('📊 Status Code: ${response.statusCode}');
+    try {
+      final response = await _dio.post('/register', data: data);
+      print('🧾 REGISTER response: ${response.data}');
+      print('📊 Status Code: ${response.statusCode}');
 
-    // ✅ CEK STATUS CODE
-    if (response.statusCode != 201 && response.statusCode != 200) {
-      // Jika bukan success, throw error
-      final errorMsg = response.data['message'] ?? 'Registrasi gagal';
-      throw Exception(errorMsg);
-    }
-
-    // ✅ CEK APAKAH ADA TOKEN
-    final token = response.data['access_token'] ??
-        response.data['token'] ??
-        response.data['plainTextToken'] ??
-        '';
-
-    if (token.isEmpty) {
-      throw Exception('Token tidak ditemukan dalam respons');
-    }
-
-    // ✅ CEK APAKAH ADA DATA USER
-    if (response.data['user'] == null) {
-      throw Exception('Data user tidak ditemukan dalam respons');
-    }
-
-    await saveToken(token);
-    return response.data;
-  } on DioException catch (e) {
-    // ✅ HANDLE VALIDATION ERROR (422)
-    if (e.response?.statusCode == 422) {
-      final errors = e.response?.data['errors'];
-      if (errors != null && errors is Map) {
-        // Ambil error pertama
-        final firstError = errors.values.first;
-        if (firstError is List && firstError.isNotEmpty) {
-          throw Exception(firstError[0]);
-        }
+      // ✅ CEK STATUS CODE
+      if (response.statusCode != 201 && response.statusCode != 200) {
+        // Jika bukan success, throw error
+        final errorMsg = response.data['message'] ?? 'Registrasi gagal';
+        throw Exception(errorMsg);
       }
-      throw Exception(e.response?.data['message'] ?? 'Validasi gagal');
+
+      // ✅ CEK APAKAH ADA TOKEN
+      final token = response.data['access_token'] ??
+          response.data['token'] ??
+          response.data['plainTextToken'] ??
+          '';
+
+      if (token.isEmpty) {
+        throw Exception('Token tidak ditemukan dalam respons');
+      }
+
+      // ✅ CEK APAKAH ADA DATA USER
+      if (response.data['user'] == null) {
+        throw Exception('Data user tidak ditemukan dalam respons');
+      }
+
+      await saveToken(token);
+      return response.data;
+    } on DioException catch (e) {
+      // ✅ HANDLE VALIDATION ERROR (422)
+      if (e.response?.statusCode == 422) {
+        final errors = e.response?.data['errors'];
+        if (errors != null && errors is Map) {
+          // Ambil error pertama
+          final firstError = errors.values.first;
+          if (firstError is List && firstError.isNotEmpty) {
+            throw Exception(firstError[0]);
+          }
+        }
+        throw Exception(e.response?.data['message'] ?? 'Validasi gagal');
+      }
+      throw Exception(_handleError(e));
+    } catch (e) {
+      // ✅ HANDLE ERROR LAINNYA
+      if (e is Exception) rethrow;
+      throw Exception('Registrasi gagal: ${e.toString()}');
     }
-    throw Exception(_handleError(e));
-  } catch (e) {
-    // ✅ HANDLE ERROR LAINNYA
-    if (e is Exception) rethrow;
-    throw Exception('Registrasi gagal: ${e.toString()}');
   }
-}
 
   Future<User> getUser() async {
     try {
@@ -211,10 +211,39 @@ class ApiService {
     try {
       final formData = FormData.fromMap({...data});
 
+      // ✅ PERBAIKAN: Gunakan readAsBytes() yang kompatibel Web & Mobile
       for (final file in lampiran) {
+        // Baca file sebagai bytes (cross-platform)
+        final bytes = await file.readAsBytes();
+
+        // Tentukan MIME type berdasarkan ekstensi file
+        String? mimeType;
+        final extension = file.name.toLowerCase().split('.').last;
+        switch (extension) {
+          case 'jpg':
+          case 'jpeg':
+            mimeType = 'image/jpeg';
+            break;
+          case 'png':
+            mimeType = 'image/png';
+            break;
+          case 'gif':
+            mimeType = 'image/gif';
+            break;
+          case 'pdf':
+            mimeType = 'application/pdf';
+            break;
+          default:
+            mimeType = 'application/octet-stream';
+        }
+
         formData.files.add(MapEntry(
           'lampiran[]',
-          await MultipartFile.fromFile(file.path, filename: file.name),
+          MultipartFile.fromBytes(
+            bytes,
+            filename: file.name,
+            contentType: DioMediaType.parse(mimeType),
+          ),
         ));
       }
 
@@ -240,12 +269,11 @@ class ApiService {
       final raw = response.data;
 
       // Perbaikan: tangani kemungkinan data dikemas dalam key "data"
-      final laporanData =
-          (raw is Map && raw.containsKey('laporan'))
-              ? raw['laporan']
-              : (raw is Map && raw.containsKey('data'))
-                  ? raw['data']
-                  : raw;
+      final laporanData = (raw is Map && raw.containsKey('laporan'))
+          ? raw['laporan']
+          : (raw is Map && raw.containsKey('data'))
+              ? raw['data']
+              : raw;
 
       print('🧾 PARSED LAPORAN DATA: $laporanData');
       return Laporan.fromJson(laporanData, baseUrl: _dio.options.baseUrl);
@@ -263,12 +291,11 @@ class ApiService {
 
       // Perbaikan: tangani kemungkinan data dikemas dalam key "data"
       final raw = response.data;
-      final laporanData =
-          (raw is Map && raw.containsKey('laporan'))
-              ? raw['laporan']
-              : (raw is Map && raw.containsKey('data'))
-                  ? raw['data']
-                  : raw;
+      final laporanData = (raw is Map && raw.containsKey('laporan'))
+          ? raw['laporan']
+          : (raw is Map && raw.containsKey('data'))
+              ? raw['data']
+              : raw;
 
       return Laporan.fromJson(laporanData, baseUrl: _dio.options.baseUrl);
     } on DioException catch (e) {
