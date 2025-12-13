@@ -45,9 +45,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final userName = authProvider.user?.nama ?? 'Pelapor';
-
     return Scaffold(
       backgroundColor: pageBackgroundColor,
       body: SafeArea(
@@ -72,7 +69,7 @@ class _DashboardPageState extends State<DashboardPage> {
               onRefresh: () => laporanProvider.fetchLaporanHistory(),
               child: CustomScrollView(
                 slivers: [
-                  _buildHeader(userName),
+                  _buildHeader(),
                   _buildSummarySection(laporanProvider.laporanList),
                   if (laporanProvider.isLoading &&
                       laporanProvider.laporanList.isEmpty)
@@ -115,7 +112,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   // ================= HEADER SECTION =================
-  SliverAppBar _buildHeader(String userName) {
+  SliverAppBar _buildHeader() {
     return SliverAppBar(
       backgroundColor: pageBackgroundColor,
       pinned: true,
@@ -123,12 +120,17 @@ class _DashboardPageState extends State<DashboardPage> {
       expandedHeight: 120.0,
       flexibleSpace: FlexibleSpaceBar(
         titlePadding: const EdgeInsets.symmetric(horizontal: 16.0),
-        title: Text(
-          'Selamat Datang,\n$userName',
-          style: const TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-          ),
+        title: Consumer<AuthProvider>(
+          builder: (context, authProvider, child) {
+            final userName = authProvider.user?.nama ?? 'Pelapor';
+            return Text(
+              'Selamat Datang,\n$userName',
+              style: const TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.bold,
+              ),
+            );
+          },
         ),
         centerTitle: false,
       ),

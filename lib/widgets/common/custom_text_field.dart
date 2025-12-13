@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../../utils/mmddyyyy_input_formatter.dart';
 
 class CustomTextField extends StatelessWidget {
   final String label;
@@ -48,7 +50,10 @@ class CustomTextField extends StatelessWidget {
       ),
       labelStyle: const TextStyle(color: Colors.black87),
       suffixIcon: isDateField
-          ? const Icon(Icons.calendar_today, color: primaryColor)
+          ? IconButton(
+              icon: const Icon(Icons.calendar_today, color: primaryColor),
+              onPressed: onDateTap, // buka showDatePicker
+            )
           : null,
     );
 
@@ -57,12 +62,23 @@ class CustomTextField extends StatelessWidget {
       child: TextFormField(
         controller: controller,
         maxLines: maxLines,
-        keyboardType: keyboardType,
-        readOnly: isDateField,
-        onTap: onDateTap,
+        // Untuk field tanggal, pakai keyboard angka
+        keyboardType: isDateField ? TextInputType.number : keyboardType,
+        // Jangan readOnly supaya bisa diketik
+        readOnly: false,
+        // onTap hanya dipakai untuk field biasa;
+        // untuk field tanggal, user ketuk ikon kalender.
+        onTap: isDateField ? null : onDateTap,
         validator: validator,
         style: const TextStyle(color: Colors.black87),
         decoration: consistentDecoration,
+        // Formatter khusus untuk tanggal mm/dd/yyyy
+        inputFormatters: isDateField
+            ? [
+                FilteringTextInputFormatter.digitsOnly,
+                MmDdYyyyInputFormatter(),
+              ]
+            : null,
       ),
     );
   }

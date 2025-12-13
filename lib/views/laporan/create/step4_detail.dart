@@ -246,14 +246,58 @@ class _Step4DetailState extends State<Step4Detail> {
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: primaryColor,
+              onSurface: Colors.black87,
+            ),
+            dialogBackgroundColor: Colors.white,
+            inputDecorationTheme: InputDecorationTheme(
+              filled: true,
+              fillColor: cardBackgroundColor, // = Colors.white
+              labelStyle: const TextStyle(color: Colors.black54),
+              hintStyle: const TextStyle(color: Colors.black54),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+              ),
+              focusedBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+                borderSide: BorderSide(color: primaryColor, width: 1.5),
+              ),
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: primaryColor,
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
+
     if (pickedDate == null) return;
+
     final TimeOfDay? pickedTime =
         await showTimePicker(context: context, initialTime: TimeOfDay.now());
     if (pickedTime == null) return;
-    final DateTime finalDateTime = DateTime(pickedDate.year, pickedDate.month,
-        pickedDate.day, pickedTime.hour, pickedTime.minute);
-    controller.text = DateFormat('yyyy-MM-dd HH:mm').format(finalDateTime);
+
+    final DateTime finalDateTime = DateTime(
+      pickedDate.year,
+      pickedDate.month,
+      pickedDate.day,
+      pickedTime.hour,
+      pickedTime.minute,
+    );
+
+   controller.text = DateFormat('MM/dd/yyyy').format(finalDateTime);
   }
 
   Future<void> _showAttachmentPicker() async {

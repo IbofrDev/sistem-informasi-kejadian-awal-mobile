@@ -38,7 +38,45 @@ class Step2Perjalanan extends StatelessWidget {
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
+      builder: (BuildContext context, Widget? child) {
+        // Tema khusus hanya untuk dialog date picker
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: primaryColor, // warna header & tombol OK/Cancel
+              onSurface: Colors.black87, // warna teks
+            ),
+            dialogBackgroundColor: Colors.white,
+            inputDecorationTheme: InputDecorationTheme(
+              filled: true,
+              fillColor: Colors
+                  .white, // sama seperti CustomTextField.cardBackgroundColor
+              labelStyle: const TextStyle(color: Colors.black54),
+              hintStyle: const TextStyle(color: Colors.black54),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+              ),
+              focusedBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+                borderSide: BorderSide(color: primaryColor, width: 1.5),
+              ),
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: primaryColor, // warna teks tombol Cancel & OK
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
+
     if (pickedDate == null) return;
 
     final TimeOfDay? pickedTime = await showTimePicker(
@@ -55,7 +93,7 @@ class Step2Perjalanan extends StatelessWidget {
       pickedTime.minute,
     );
 
-    controller.text = DateFormat('yyyy-MM-dd HH:mm').format(finalDateTime);
+    controller.text = DateFormat('MM/dd/yyyy').format(finalDateTime);
   }
 
   @override
@@ -95,7 +133,8 @@ class Step2Perjalanan extends StatelessWidget {
                 label: 'Estimasi Tiba *',
                 controller: estimasiTibaController,
                 isDateField: true,
-                onDateTap: () => _selectDateTime(context, estimasiTibaController),
+                onDateTap: () =>
+                    _selectDateTime(context, estimasiTibaController),
                 validator: (v) => (v == null || v.isEmpty)
                     ? 'Estimasi tiba wajib diisi'
                     : null,
@@ -130,9 +169,8 @@ class Step2Perjalanan extends StatelessWidget {
                 label: 'Kontak Agen *',
                 controller: kontakAgenController,
                 keyboardType: TextInputType.phone,
-                validator: (v) => (v == null || v.isEmpty)
-                    ? 'Kontak agen wajib diisi'
-                    : null,
+                validator: (v) =>
+                    (v == null || v.isEmpty) ? 'Kontak agen wajib diisi' : null,
               ),
               CustomTextField(
                 label: 'Nama Pandu (Opsional)',
