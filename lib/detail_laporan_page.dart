@@ -4,6 +4,8 @@ import 'package:printing/printing.dart';
 import '../models/laporan.dart';
 import '../services/api_service.dart';
 import '../services/pdf_generator.dart';
+import 'image_preview_page.dart';
+import 'video_preview_page.dart';
 
 class DetailLaporanPage extends StatefulWidget {
   final int laporanId;
@@ -93,9 +95,10 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
 
   // 🔹 Format tanggal menjadi bentuk "27 Okt 2025, 14:25"
   String _formatTanggalWaktu(String? isoString) {
-    if (isoString == null || isoString.isEmpty) return 'N/A';
+    if (isoString == null || isoString.isEmpty) return '-';
     try {
-      final dateTime = DateTime.parse(isoString).toLocal();
+      final dateTime =
+          DateTime.parse(isoString).toUtc().add(const Duration(hours: 8));
       const bulan = [
         'Jan',
         'Feb',
@@ -113,9 +116,9 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
       final namaBulan = bulan[dateTime.month - 1];
       final jam = dateTime.hour.toString().padLeft(2, '0');
       final menit = dateTime.minute.toString().padLeft(2, '0');
-      return '${dateTime.day} $namaBulan ${dateTime.year}, $jam:$menit';
+      return '${dateTime.day} $namaBulan ${dateTime.year}, $jam:$menit WITA';
     } catch (_) {
-      return isoString ?? '';
+      return isoString;
     }
   }
 
@@ -228,13 +231,15 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
                     ]),
 
                     // === Rute Perjalanan ===
+                    // === Rute Perjalanan ===
                     _buildDetailCard('Rute Perjalanan', [
                       _buildDetailRow('Pelabuhan Asal', laporan.pelabuhanAsal),
-                      _buildDetailRow(
-                          'Waktu Berangkat', laporan.waktuBerangkat),
+                      _buildDetailRow('Waktu Berangkat',
+                          _formatTanggalWaktu(laporan.waktuBerangkat)),
                       _buildDetailRow(
                           'Pelabuhan Tujuan', laporan.pelabuhanTujuan),
-                      _buildDetailRow('Estimasi Tiba', laporan.estimasiTiba),
+                      _buildDetailRow('Estimasi Tiba',
+                          _formatTanggalWaktu(laporan.estimasiTiba)),
                     ]),
 
                     // === Pemilik & Agen ===
@@ -258,11 +263,12 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
                     ]),
 
                     // === Lokasi Kejadian ===
+                    // === Lokasi Kejadian ===
                     _buildDetailCard('Lokasi Kejadian', [
                       _buildDetailRow('Posisi Lintang', laporan.posisiLintang),
                       _buildDetailRow('Posisi Bujur', laporan.posisiBujur),
-                      _buildDetailRow(
-                          'Tanggal Laporan', laporan.tanggalLaporan),
+                      _buildDetailRow('Tanggal Laporan',
+                          _formatTanggalWaktu(laporan.tanggalLaporan)),
                     ]),
 
                     // === 🔹 Jenis Kecelakaan ===
@@ -414,7 +420,7 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
           Text(title, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
           const SizedBox(height: 4),
           Text(
-            value == null || value.isEmpty ? 'N/A' : value,
+            value == null || value.isEmpty ? '-' : value,
             textAlign: TextAlign.justify,
             style: TextStyle(
               fontSize: 15,
@@ -425,6 +431,13 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
         ],
       ),
     );
+  }
+
+// Helper untuk cek apakah file adalah video
+  bool _isVideo(String url) {
+    final videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.3gp'];
+    final lowerUrl = url.toLowerCase();
+    return videoExtensions.any((ext) => lowerUrl.contains(ext));
   }
 
   Widget _buildLampiranCard(Laporan laporan) {
@@ -444,18 +457,80 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
           itemCount: laporan.lampiran.length,
           itemBuilder: (context, index) {
             final l = laporan.lampiran[index];
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                l.url,
-                fit: BoxFit.cover,
-                loadingBuilder: (ctx, child, progress) => progress == null
-                    ? child
-                    : const Center(child: CircularProgressIndicator()),
-                errorBuilder: (ctx, err, st) => Container(
-                  color: Colors.grey[200],
-                  child: const Icon(Icons.broken_image),
-                ),
+            final isVideo = _isVideo(l.url);
+
+            return InkWell(
+              onTap: () {
+                if (isVideo) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => VideoPreviewPage(
+                        videoUrl: l.url,
+                        title: 'Video ${index + 1}',
+                      ),
+                    ),
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ImagePreviewPage(
+                        imageUrl: l.url,
+                        title: 'Lampiran ${index + 1}',
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: isVideo
+                        ? Container(
+                            width: double.infinity,
+                            height: double.infinity,
+                            color: Colors.grey[800],
+                            child: const Icon(
+                              Icons.videocam,
+                              color: Colors.white54,
+                              size: 32,
+                            ),
+                          )
+                        : Image.network(
+                            l.url,
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (ctx, child, progress) =>
+                                progress == null
+                                    ? child
+                                    : const Center(
+                                        child: CircularProgressIndicator()),
+                            errorBuilder: (ctx, err, st) => Container(
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.broken_image),
+                            ),
+                          ),
+                  ),
+                  Positioned(
+                    right: 4,
+                    top: 4,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        isVideo ? Icons.play_arrow : Icons.zoom_in,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             );
           },

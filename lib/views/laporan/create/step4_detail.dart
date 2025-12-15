@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -123,25 +122,6 @@ class _Step4DetailState extends State<Step4Detail> {
     double dd = deg + (min / 60) + (sec / 3600);
     if (dir == 'S' || dir == 'B' || dir == 'W') dd *= -1;
     return dd;
-  }
-
-  Future<void> _pickFileDocument() async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        allowMultiple: true,
-        type: FileType.custom,
-        allowedExtensions: ['pdf', 'doc', 'docx'],
-      );
-
-      if (result != null && result.files.isNotEmpty) {
-        final files = result.paths.map((p) => XFile(p!)).toList();
-        final updated = [...widget.lampiranFiles, ...files];
-        widget.onLampiranChanged(updated);
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Gagal memilih file: $e')));
-    }
   }
 
   Future<void> _pickMedia(ImageSource source, {required bool isVideo}) async {
@@ -297,7 +277,7 @@ class _Step4DetailState extends State<Step4Detail> {
       pickedTime.minute,
     );
 
-   controller.text = DateFormat('MM/dd/yyyy').format(finalDateTime);
+    controller.text = DateFormat('MM/dd/yyyy').format(finalDateTime);
   }
 
   Future<void> _showAttachmentPicker() async {
@@ -335,14 +315,6 @@ class _Step4DetailState extends State<Step4Detail> {
               title: const Text('Rekam Video Baru'),
               onTap: () {
                 _pickMedia(ImageSource.camera, isVideo: true);
-                Navigator.of(context).pop();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.insert_drive_file),
-              title: const Text('Pilih Dokumen (PDF/Word)'),
-              onTap: () {
-                _pickFileDocument();
                 Navigator.of(context).pop();
               },
             ),
@@ -424,13 +396,13 @@ class _Step4DetailState extends State<Step4Detail> {
           title: 'Rincian Laporan',
           children: [
             CustomTextField(
-              label: 'Tanggal Laporan *',
+              label: 'Waktu Kejadian *',
               controller: widget.tanggalLaporanController,
               isDateField: true,
               onDateTap: () =>
                   _selectDateTime(context, widget.tanggalLaporanController),
               validator: (v) => (v == null || v.isEmpty)
-                  ? 'Tanggal laporan wajib diisi'
+                  ? 'Waktu Kejadian wajib diisi'
                   : null,
             ),
             CustomTextField(
@@ -558,7 +530,6 @@ class _Step4DetailState extends State<Step4Detail> {
                     ext == '.jpeg' ||
                     ext == '.png' ||
                     ext == '.gif';
-                final isDoc = ext == '.pdf' || ext == '.doc' || ext == '.docx';
                 file.path.endsWith('.mp4') || file.path.endsWith('.mov');
                 return Stack(
                   children: [
@@ -578,12 +549,7 @@ class _Step4DetailState extends State<Step4Detail> {
                           ? const Center(
                               child: Icon(Icons.play_circle_fill,
                                   color: Colors.white, size: 40))
-                          : (isDoc
-                              ? const Center(
-                                  child: Icon(Icons.insert_drive_file,
-                                      color: Colors.blueGrey, size: 40),
-                                )
-                              : null),
+                          : null,
                     ),
 
                     // --- Tombol silang hapus file ---

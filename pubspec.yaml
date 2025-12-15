@@ -27,6 +27,8 @@ dependencies:
   printing: ^5.11.1
 
   flutter_native_splash: ^2.4.0
+  video_player: ^2.8.1
+  chewie: ^1.7.1  # Optional: untuk kontrol video yang lebih baik
 
 dev_dependencies:
   flutter_test:

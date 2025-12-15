@@ -8,9 +8,13 @@ import 'auth_provider.dart';
 class LaporanProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
   final DraftService _draftService = DraftService();
-  final AuthProvider authProvider;
+  AuthProvider authProvider;
 
   LaporanProvider({required this.authProvider});
+  
+  void updateAuthProvider(AuthProvider newAuthProvider) {
+    authProvider = newAuthProvider;
+  }
 
   // ===================== STATE =====================
   bool _isLoading = false;
@@ -28,14 +32,16 @@ class LaporanProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      debugPrint("📡 [LaporanProvider] Mengambil daftar laporan dari server...");
+      debugPrint(
+          "📡 [LaporanProvider] Mengambil daftar laporan dari server...");
       _laporanList = await _apiService.getLaporanHistory();
       debugPrint(
           "✅ [LaporanProvider] Berhasil memuat ${_laporanList.length} laporan dari server.");
     } catch (e, s) {
       String cleanMsg = e.toString();
       if (cleanMsg.contains("Unauthenticated")) {
-        debugPrint("🚫 [LaporanProvider] Token tidak valid atau belum login ulang.");
+        debugPrint(
+            "🚫 [LaporanProvider] Token tidak valid atau belum login ulang.");
         _errorMessage = "Sesi Anda telah berakhir. Silakan login kembali.";
         await authProvider.logout();
       } else {

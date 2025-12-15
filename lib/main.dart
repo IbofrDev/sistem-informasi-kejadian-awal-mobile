@@ -34,8 +34,13 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProxyProvider<AuthProvider, LaporanProvider>(
           create: (context) =>
               LaporanProvider(authProvider: context.read<AuthProvider>()),
-          update: (_, authProvider, previous) =>
-              LaporanProvider(authProvider: authProvider),
+          update: (_, authProvider, previous) {
+            if (previous != null) {
+              previous.updateAuthProvider(authProvider);
+              return previous;
+            }
+            return LaporanProvider(authProvider: authProvider);
+          },
         ),
 
         // Provider untuk fungsi admin

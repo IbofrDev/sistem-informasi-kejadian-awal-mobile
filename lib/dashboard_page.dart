@@ -43,6 +43,35 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
+  // Kode BARU - Tambahkan setelah fungsi _getStatusColor
+  String _formatTanggalWaktu(String? isoString) {
+    if (isoString == null || isoString.isEmpty) return '-';
+    try {
+      final dateTime =
+          DateTime.parse(isoString).toUtc().add(const Duration(hours: 8));
+      const bulan = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'Mei',
+        'Jun',
+        'Jul',
+        'Agu',
+        'Sep',
+        'Okt',
+        'Nov',
+        'Des'
+      ];
+      final namaBulan = bulan[dateTime.month - 1];
+      final jam = dateTime.hour.toString().padLeft(2, '0');
+      final menit = dateTime.minute.toString().padLeft(2, '0');
+      return '${dateTime.day} $namaBulan ${dateTime.year}, $jam:$menit WITA';
+    } catch (_) {
+      return isoString;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -336,7 +365,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                     size: 14, color: Colors.grey[700]),
                                 const SizedBox(width: 6),
                                 Text(
-                                  laporan.tanggalLaporan ?? '-',
+                                  _formatTanggalWaktu(laporan.tanggalLaporan),
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: Colors.grey[700],

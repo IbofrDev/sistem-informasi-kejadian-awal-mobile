@@ -63,6 +63,13 @@ class ApiService {
       await saveToken(token);
       return response.data;
     } on DioException catch (e) {
+      // 🔒 Handle 403 - Admin tidak boleh login via mobile
+      if (e.response?.statusCode == 403) {
+        final message = e.response?.data['message'] ??
+            'Akun admin tidak dapat mengakses aplikasi mobile.';
+        throw Exception(message);
+      }
+      // Handle 401 - Email/password salah
       if (e.response?.statusCode == 401) {
         throw Exception('Email atau password salah.');
       }
