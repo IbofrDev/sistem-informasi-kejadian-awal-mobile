@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
@@ -236,7 +238,7 @@ class _Step4DetailState extends State<Step4Detail> {
             dialogBackgroundColor: Colors.white,
             inputDecorationTheme: InputDecorationTheme(
               filled: true,
-              fillColor: cardBackgroundColor, // = Colors.white
+              fillColor: cardBackgroundColor,
               labelStyle: const TextStyle(color: Colors.black54),
               hintStyle: const TextStyle(color: Colors.black54),
               border: OutlineInputBorder(
@@ -277,7 +279,15 @@ class _Step4DetailState extends State<Step4Detail> {
       pickedTime.minute,
     );
 
-    controller.text = DateFormat('MM/dd/yyyy').format(finalDateTime);
+    // ✅ FORMAT: "2025-12-03 13:14:00" - Laravel pasti paham format ini
+    controller.text = '${finalDateTime.year}-'
+        '${finalDateTime.month.toString().padLeft(2, '0')}-'
+        '${finalDateTime.day.toString().padLeft(2, '0')} '
+        '${finalDateTime.hour.toString().padLeft(2, '0')}:'
+        '${finalDateTime.minute.toString().padLeft(2, '0')}:00';
+
+    // 🔍 Debug (hapus setelah testing)
+    debugPrint('Waktu yang dikirim ke backend: ${controller.text}');
   }
 
   Future<void> _showAttachmentPicker() async {
