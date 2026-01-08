@@ -231,15 +231,19 @@ class _DetailLaporanPageState extends State<DetailLaporanPage> {
                     ]),
 
                     // === Rute Perjalanan ===
-                    // === Rute Perjalanan ===
                     _buildDetailCard('Rute Perjalanan', [
                       _buildDetailRow('Pelabuhan Asal', laporan.pelabuhanAsal),
                       _buildDetailRow('Waktu Berangkat',
                           _formatTanggalWaktu(laporan.waktuBerangkat)),
                       _buildDetailRow(
                           'Pelabuhan Tujuan', laporan.pelabuhanTujuan),
-                      _buildDetailRow('Estimasi Tiba',
-                          _formatTanggalWaktu(laporan.estimasiTiba)),
+                      _buildDetailRow(
+                        'Jadwal Tiba Awal',
+                        (laporan.estimasiTiba == null ||
+                                laporan.estimasiTiba!.isEmpty)
+                            ? '-'
+                            : _formatTanggalWaktu(laporan.estimasiTiba),
+                      ),
                     ]),
 
                     // === Pemilik & Agen ===

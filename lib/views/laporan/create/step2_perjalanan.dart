@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../../widgets/common/custom_text_field.dart';
 import '../../../widgets/common/info_card.dart';
 
-class Step2Perjalanan extends StatelessWidget {
+class Step2Perjalanan extends StatefulWidget {
   final TextEditingController pelabuhanAsalController;
-  final TextEditingController waktuBerangkatController;
+  final TextEditingController
+      tanggalBerangkatController; // Gabungan tanggal + jam
   final TextEditingController pelabuhanTujuanController;
-  final TextEditingController estimasiTibaController;
+  final TextEditingController jadwalTibaController; // GANTI NAMA
   final TextEditingController pemilikKapalController;
   final TextEditingController kontakPemilikController;
   final TextEditingController agenLokalController;
@@ -18,9 +18,9 @@ class Step2Perjalanan extends StatelessWidget {
   const Step2Perjalanan({
     super.key,
     required this.pelabuhanAsalController,
-    required this.waktuBerangkatController,
+    required this.tanggalBerangkatController, // Gabungan tanggal + jam
     required this.pelabuhanTujuanController,
-    required this.estimasiTibaController,
+    required this.jadwalTibaController, // GANTI NAMA
     required this.pemilikKapalController,
     required this.kontakPemilikController,
     required this.agenLokalController,
@@ -29,72 +29,14 @@ class Step2Perjalanan extends StatelessWidget {
     required this.noRegisterPanduController,
   });
 
+  @override
+  State<Step2Perjalanan> createState() => _Step2PerjalananState();
+}
+
+class _Step2PerjalananState extends State<Step2Perjalanan> {
   static const Color primaryColor = Color(0xFF005A9C);
 
-  Future<void> _selectDateTime(
-      BuildContext context, TextEditingController controller) async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-      builder: (BuildContext context, Widget? child) {
-        // Tema khusus hanya untuk dialog date picker
-        return Theme(
-          data: ThemeData.light().copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: primaryColor, // warna header & tombol OK/Cancel
-              onSurface: Colors.black87, // warna teks
-            ),
-            dialogBackgroundColor: Colors.white,
-            inputDecorationTheme: InputDecorationTheme(
-              filled: true,
-              fillColor: Colors
-                  .white, // sama seperti CustomTextField.cardBackgroundColor
-              labelStyle: const TextStyle(color: Colors.black54),
-              hintStyle: const TextStyle(color: Colors.black54),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
-              ),
-              focusedBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-                borderSide: BorderSide(color: primaryColor, width: 1.5),
-              ),
-            ),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: primaryColor, // warna teks tombol Cancel & OK
-              ),
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (pickedDate == null) return;
-
-    final TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(DateTime.now()),
-    );
-    if (pickedTime == null) return;
-
-    final DateTime finalDateTime = DateTime(
-      pickedDate.year,
-      pickedDate.month,
-      pickedDate.day,
-      pickedTime.hour,
-      pickedTime.minute,
-    );
-
-    controller.text = DateFormat('MM/dd/yyyy').format(finalDateTime);
-  }
+  // Method-method baru akan ditambahkan di sini
 
   @override
   Widget build(BuildContext context) {
@@ -107,37 +49,34 @@ class Step2Perjalanan extends StatelessWidget {
             children: [
               CustomTextField(
                 label: 'Pelabuhan Asal *',
-                controller: pelabuhanAsalController,
+                controller: widget.pelabuhanAsalController,
                 validator: (v) => (v == null || v.isEmpty)
                     ? 'Pelabuhan asal wajib diisi'
                     : null,
               ),
               CustomTextField(
                 label: 'Waktu Berangkat *',
-                controller: waktuBerangkatController,
+                controller: widget.tanggalBerangkatController,
                 isDateField: true,
                 onDateTap: () =>
-                    _selectDateTime(context, waktuBerangkatController),
+                    _selectDateTime(context, widget.tanggalBerangkatController),
                 validator: (v) => (v == null || v.isEmpty)
                     ? 'Waktu berangkat wajib diisi'
                     : null,
               ),
               CustomTextField(
                 label: 'Pelabuhan Tujuan *',
-                controller: pelabuhanTujuanController,
+                controller: widget.pelabuhanTujuanController,
                 validator: (v) => (v == null || v.isEmpty)
                     ? 'Pelabuhan tujuan wajib diisi'
                     : null,
               ),
               CustomTextField(
-                label: 'Estimasi Tiba *',
-                controller: estimasiTibaController,
+                label: 'Perkiraan Waktu Tiba Awal (Opsional)',
+                controller: widget.jadwalTibaController,
                 isDateField: true,
                 onDateTap: () =>
-                    _selectDateTime(context, estimasiTibaController),
-                validator: (v) => (v == null || v.isEmpty)
-                    ? 'Estimasi tiba wajib diisi'
-                    : null,
+                    _selectDateTime(context, widget.jadwalTibaController),
               ),
             ],
           ),
@@ -146,14 +85,14 @@ class Step2Perjalanan extends StatelessWidget {
             children: [
               CustomTextField(
                 label: 'Pemilik / Operator Kapal *',
-                controller: pemilikKapalController,
+                controller: widget.pemilikKapalController,
                 validator: (v) => (v == null || v.isEmpty)
                     ? 'Pemilik kapal wajib diisi'
                     : null,
               ),
               CustomTextField(
                 label: 'Kontak Pemilik / Operator *',
-                controller: kontakPemilikController,
+                controller: widget.kontakPemilikController,
                 keyboardType: TextInputType.phone,
                 validator: (v) => (v == null || v.isEmpty)
                     ? 'Kontak pemilik wajib diisi'
@@ -161,29 +100,104 @@ class Step2Perjalanan extends StatelessWidget {
               ),
               CustomTextField(
                 label: 'Agen Lokal *',
-                controller: agenLokalController,
+                controller: widget.agenLokalController,
                 validator: (v) =>
                     (v == null || v.isEmpty) ? 'Agen lokal wajib diisi' : null,
               ),
               CustomTextField(
                 label: 'Kontak Agen *',
-                controller: kontakAgenController,
+                controller: widget.kontakAgenController,
                 keyboardType: TextInputType.phone,
                 validator: (v) =>
                     (v == null || v.isEmpty) ? 'Kontak agen wajib diisi' : null,
               ),
               CustomTextField(
                 label: 'Nama Pandu (Opsional)',
-                controller: namaPanduController,
+                controller: widget.namaPanduController,
               ),
               CustomTextField(
                 label: 'No. Register Pandu (Opsional)',
-                controller: noRegisterPanduController,
+                controller: widget.noRegisterPanduController,
               ),
             ],
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _selectDateTime(
+    BuildContext context,
+    TextEditingController controller,
+  ) async {
+    final now = DateTime.now();
+
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: now,
+      firstDate: DateTime(2020),
+      lastDate: now,
+      helpText: 'Pilih Tanggal Keberangkatan',
+      cancelText: 'Batal',
+      confirmText: 'Pilih',
+      // ⬇️ BAGIAN PENTING: pakai calendarOnly agar ikon pensil hilang
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            useMaterial3: true, // boleh dihapus jika tidak pakai M3
+            datePickerTheme: const DatePickerThemeData(
+                // optional: styling lain jika mau
+                ),
+            colorScheme: const ColorScheme.light(
+              primary: primaryColor,
+              onSurface: Colors.black87,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedDate == null) return;
+
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+      helpText: 'Pilih Jam Keberangkatan',
+      cancelText: 'Batal',
+      confirmText: 'Pilih',
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: Theme(
+            data: ThemeData.light().copyWith(
+              colorScheme: const ColorScheme.light(
+                primary: primaryColor,
+                onSurface: Colors.black87,
+              ),
+            ),
+            child: child!,
+          ),
+        );
+      },
+    );
+
+    if (pickedTime == null) return;
+
+    final DateTime finalDateTime = DateTime(
+      pickedDate.year,
+      pickedDate.month,
+      pickedDate.day,
+      pickedTime.hour,
+      pickedTime.minute,
+    );
+
+    // Format: "2025-01-15 13:14:00"
+    controller.text = '${finalDateTime.year}-'
+        '${finalDateTime.month.toString().padLeft(2, '0')}-'
+        '${finalDateTime.day.toString().padLeft(2, '0')} '
+        '${finalDateTime.hour.toString().padLeft(2, '0')}:'
+        '${finalDateTime.minute.toString().padLeft(2, '0')}:00';
   }
 }

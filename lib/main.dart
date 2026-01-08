@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:sistem_kejadian_awal_mobile/edit_profile_page.dart';
 import 'package:sistem_kejadian_awal_mobile/pages/profile_page.dart';
 import 'package:sistem_kejadian_awal_mobile/pages/user_settings_page.dart';
-
+import 'package:firebase_core/firebase_core.dart';
+import 'services/notification_service.dart';
+import 'detail_laporan_page.dart';
 // Providers
 import 'providers/auth_provider.dart';
 import 'providers/laporan_provider.dart';
@@ -16,8 +18,52 @@ import 'register_page.dart';
 import 'dashboard_page.dart';
 import 'admin_dashboard_page.dart';
 
-void main() {
+// Global navigator key untuk navigasi dari notification
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  try {
+    await Firebase.initializeApp();
+    print('✅ Firebase initialized successfully');
+  } catch (e) {
+    print('❌ Firebase initialization failed: $e');
+  }
+
+  // Initialize Notification Service
+  try {
+    final notificationService = NotificationService();
+    await notificationService.initialize();
+    
+    // Setup notification tap handler
+    notificationService.onNotificationTap = (Map<String, dynamic> data) {
+      _handleNotificationNavigation(data);
+    };
+    print('✅ Notification Service initialized successfully');
+  } catch (e) {
+    print('❌ Notification Service initialization failed: $e');
+  }
+
   runApp(const MyApp());
+}
+
+// Handler untuk navigasi dari notification
+void _handleNotificationNavigation(Map<String, dynamic> data) {
+  print('🔔 Handling notification tap: $data');
+
+  // Navigasi ke detail laporan jika ada laporan_id
+  if (data.containsKey('laporan_id')) {
+    final laporanId = int.tryParse(data['laporan_id'].toString());
+    if (laporanId != null) {
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (context) => DetailLaporanPage(laporanId: laporanId),
+        ),
+      );
+    }
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -47,6 +93,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AdminProvider()),
       ],
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         title: 'Sistem Laporan Awal',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(

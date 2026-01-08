@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
+import '../services/notification_service.dart';
 
 class AuthProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -28,6 +29,17 @@ class AuthProvider with ChangeNotifier {
       final response = await _apiService.login(email, password);
       _user = User.fromJson(response['user']);
       _isAuthenticated = true;
+// 🔔 Kirim FCM token ke server setelah login berhasil
+      try {
+        final notificationService = NotificationService();
+        final fcmToken = await notificationService.getToken();
+        if (fcmToken != null) {
+          await _apiService.updateFCMToken(fcmToken);
+        }
+      } catch (e) {
+        print('⚠️ Gagal mengirim FCM token: $e');
+      }
+
       return true;
     } catch (e) {
       _errorMessage = e.toString(); // <-- tampilkan pesan dari exception
@@ -137,6 +149,13 @@ class AuthProvider with ChangeNotifier {
 
   // ======================= LOGOUT =======================
   Future<void> logout() async {
+// 🔔 Hapus FCM token dari server sebelum logout
+    try {
+      await _apiService.removeFCMToken();
+    } catch (e) {
+      print('⚠️ Gagal menghapus FCM token: $e');
+    }
+
     await _apiService.clearToken();
     _user = null;
     _isAuthenticated = false;

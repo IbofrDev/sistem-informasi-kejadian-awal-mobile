@@ -222,12 +222,25 @@ class _Step4DetailState extends State<Step4Detail> {
   }
 
   Future<void> _selectDateTime(
-      BuildContext context, TextEditingController controller) async {
+    BuildContext context,
+    TextEditingController controller,
+  ) async {
+    final now = DateTime.now();
+
+// kalau mau benar‑benar “hari ini” tanpa jam, bisa pakai:
+// final today = DateTime(now.year, now.month, now.day);
+
     final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: now,
       firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
+      // ⬇️ batasi agar tidak bisa pilih tanggal setelah hari ini
+      lastDate: now,
+      // kalau mau lebih ketat: lastDate: today,
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
+      helpText: 'Pilih Tanggal Kejadian',
+      cancelText: 'Batal',
+      confirmText: 'Pilih',
       builder: (BuildContext context, Widget? child) {
         return Theme(
           data: ThemeData.light().copyWith(
@@ -267,8 +280,29 @@ class _Step4DetailState extends State<Step4Detail> {
 
     if (pickedDate == null) return;
 
-    final TimeOfDay? pickedTime =
-        await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+      // ⬇️ judul dialog jam
+      helpText: 'Pilih Jam Kejadian',
+      cancelText: 'Batal',
+      confirmText: 'Pilih',
+      builder: (context, child) {
+        return MediaQuery(
+          // pakai 24 jam kalau ingin konsisten seperti Step 2
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: Theme(
+            data: ThemeData.light().copyWith(
+              colorScheme: const ColorScheme.light(
+                primary: primaryColor,
+                onSurface: Colors.black87,
+              ),
+            ),
+            child: child!,
+          ),
+        );
+      },
+    );
     if (pickedTime == null) return;
 
     final DateTime finalDateTime = DateTime(
@@ -279,14 +313,13 @@ class _Step4DetailState extends State<Step4Detail> {
       pickedTime.minute,
     );
 
-    // ✅ FORMAT: "2025-12-03 13:14:00" - Laravel pasti paham format ini
+    // Format: "2025-01-15 13:14:00"
     controller.text = '${finalDateTime.year}-'
         '${finalDateTime.month.toString().padLeft(2, '0')}-'
         '${finalDateTime.day.toString().padLeft(2, '0')} '
         '${finalDateTime.hour.toString().padLeft(2, '0')}:'
         '${finalDateTime.minute.toString().padLeft(2, '0')}:00';
 
-    // 🔍 Debug (hapus setelah testing)
     debugPrint('Waktu yang dikirim ke backend: ${controller.text}');
   }
 

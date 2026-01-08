@@ -124,11 +124,10 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   // --- HEADER ---
                   Image.asset(
-                    'assets/images/logo_ksop.png', // <-- PATH GAMBAR SUDAH DIPERBAIKI
+                    'assets/images/icon_SIKAP.png', // <-- LOGO BARU
                     height: 100,
                     errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons
-                            .anchor, // Ini hanya akan muncul jika file logo_ksop.png hilang
+                        Icons.anchor,
                         size: 100,
                         color: primaryColor),
                   ),

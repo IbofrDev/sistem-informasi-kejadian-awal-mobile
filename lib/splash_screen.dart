@@ -64,10 +64,6 @@ class _SplashScreenState extends State<SplashScreen> {
   /// ------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
-    // Warna tema utama
-    const Color primaryTextColor = Color(0xFF0D214F); // Biru tua
-    const Color secondaryTextColor = Colors.black54;
-
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F5),
       body: Stack(
@@ -76,23 +72,24 @@ class _SplashScreenState extends State<SplashScreen> {
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                // Logo KSOP
+              children: [
+                // Logo SIKAP
                 Image(
-                  image: AssetImage('assets/images/logo_ksop.png'),
+                  image: const AssetImage('assets/images/icon_SIKAP.png'),
                   width: 200,
                   fit: BoxFit.contain,
                 ),
-                SizedBox(height: 32),
-                // Spinner loading
+                const SizedBox(height: 32),
+// Spinner loading
                 CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(primaryTextColor),
+                  valueColor:
+                      const AlwaysStoppedAnimation<Color>(Color(0xFF0D214F)),
                 ),
-                SizedBox(height: 16),
-                Text(
+                const SizedBox(height: 16),
+                const Text(
                   'Memeriksa Sesi Anda...',
                   style: TextStyle(
-                    color: primaryTextColor,
+                    color: Color(0xFF0D214F),
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
@@ -106,22 +103,22 @@ class _SplashScreenState extends State<SplashScreen> {
             left: 0,
             right: 0,
             child: Column(
-              children: const [
-                Text(
+              children: [
+                const Text(
                   'SIKAP',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: secondaryTextColor,
+                    color: Colors.black54,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                SizedBox(height: 4),
-                Text(
+                const SizedBox(height: 4),
+                const Text(
                   'Kantor KSOP Kelas I Banjarmasin',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: secondaryTextColor,
+                    color: Colors.black54,
                     fontSize: 12,
                   ),
                 ),

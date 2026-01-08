@@ -184,6 +184,33 @@ class ApiService {
   }
 
   // ===============================================================
+  // 🔔 FCM TOKEN (Push Notification)
+  // ===============================================================
+
+  Future<void> updateFCMToken(String fcmToken) async {
+    try {
+      final response = await _dio.post(
+        '/user/fcm-token',
+        data: {'fcm_token': fcmToken},
+      );
+      print('🔔 FCM token berhasil dikirim ke server');
+    } on DioException catch (e) {
+      print('⚠️ Gagal mengirim FCM token: ${_handleError(e)}');
+      // Tidak throw exception, biarkan proses login tetap lanjut
+    }
+  }
+
+  Future<void> removeFCMToken() async {
+    try {
+      await _dio.delete('/user/fcm-token');
+      print('🔔 FCM token berhasil dihapus dari server');
+    } on DioException catch (e) {
+      print('⚠️ Gagal menghapus FCM token: ${_handleError(e)}');
+      // Tidak throw exception, biarkan proses logout tetap lanjut
+    }
+  }
+
+  // ===============================================================
   // 🧠 LAPORAN (USER)
   // ===============================================================
 

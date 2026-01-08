@@ -34,7 +34,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
   final _grtKapalController = TextEditingController();
   final _imoNumberController = TextEditingController();
   final _pelabuhanAsalController = TextEditingController();
-  final _waktuBerangkatController = TextEditingController();
+  final _tanggalBerangkatController = TextEditingController();
   final _pelabuhanTujuanController = TextEditingController();
   final _estimasiTibaController = TextEditingController();
   final _pemilikKapalController = TextEditingController();
@@ -109,7 +109,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
     _grtKapalController.dispose();
     _imoNumberController.dispose();
     _pelabuhanAsalController.dispose();
-    _waktuBerangkatController.dispose();
+    _tanggalBerangkatController.dispose();
     _pelabuhanTujuanController.dispose();
     _estimasiTibaController.dispose();
     _pemilikKapalController.dispose();
@@ -160,7 +160,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
                   _grtKapalController.text = draft['grt_kapal'] ?? '';
                   _imoNumberController.text = draft['imo_number'] ?? '';
                   _pelabuhanAsalController.text = draft['pelabuhan_asal'] ?? '';
-                  _waktuBerangkatController.text =
+                  _tanggalBerangkatController.text =
                       draft['waktu_berangkat'] ?? '';
                   _pelabuhanTujuanController.text =
                       draft['pelabuhan_tujuan'] ?? '';
@@ -273,7 +273,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
       'grt_kapal': _grtKapalController.text.trim(),
       'imo_number': _imoNumberController.text.trim(),
       'pelabuhan_asal': _pelabuhanAsalController.text.trim(),
-      'waktu_berangkat': _waktuBerangkatController.text.trim(),
+      'waktu_berangkat': _tanggalBerangkatController.text.trim(),
       'pelabuhan_tujuan': _pelabuhanTujuanController.text.trim(),
       'estimasi_tiba': _estimasiTibaController.text.trim(),
       'pemilik_kapal': _pemilikKapalController.text.trim(),
@@ -337,9 +337,9 @@ class _CreateReportPageState extends State<CreateReportPage> {
             ),
             Step2Perjalanan(
               pelabuhanAsalController: _pelabuhanAsalController,
-              waktuBerangkatController: _waktuBerangkatController,
+              tanggalBerangkatController: _tanggalBerangkatController,
               pelabuhanTujuanController: _pelabuhanTujuanController,
-              estimasiTibaController: _estimasiTibaController,
+              jadwalTibaController: _estimasiTibaController,
               pemilikKapalController: _pemilikKapalController,
               kontakPemilikController: _kontakPemilikController,
               agenLokalController: _agenLokalController,

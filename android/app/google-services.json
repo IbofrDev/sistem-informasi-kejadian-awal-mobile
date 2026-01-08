@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "960721881192",
+    "project_id": "sikap-580bb",
+    "storage_bucket": "sikap-580bb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:960721881192:android:4d80f2954b9c5d2f2193dd",
+        "android_client_info": {
+          "package_name": "com.kejadianawal.mobileapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLnqZCqal2uko4OJcoTOhc23K_I14NpDc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,7 +1,7 @@
 name: sistem_kejadian_awal_mobile
 description: "A new Flutter project."
 publish_to: "none"
-version: 1.0.0+3
+version: 1.0.0+5
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
@@ -28,13 +28,18 @@ dependencies:
 
   flutter_native_splash: ^2.4.0
   video_player: ^2.8.1
-  chewie: ^1.7.1  # Optional: untuk kontrol video yang lebih baik
+  chewie: ^1.7.1
+
+  # Firebase packages - TAMBAHAN BARU
+  firebase_core: ^3.8.1
+  firebase_messaging: ^15.1.6
+  flutter_local_notifications: ^18.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
-  flutter_launcher_icons: ^0.13.1 # Paket ikon aplikasi
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
