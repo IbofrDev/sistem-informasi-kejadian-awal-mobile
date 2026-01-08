@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
 import '../services/notification_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class AuthProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -31,13 +32,20 @@ class AuthProvider with ChangeNotifier {
       _isAuthenticated = true;
 // 🔔 Kirim FCM token ke server setelah login berhasil
       try {
-        final notificationService = NotificationService();
-        final fcmToken = await notificationService.getToken();
+        // Import ini dulu di bagian atas file
+        // import 'package:firebase_messaging/firebase_messaging.dart';
+
+        String? fcmToken = await FirebaseMessaging.instance.getToken();
+        print('📱 FCM Token yang akan dikirim: $fcmToken');
+
         if (fcmToken != null) {
           await _apiService.updateFCMToken(fcmToken);
+          print('✅ FCM Token dikirim ke endpoint /user/fcm-token');
+        } else {
+          print('❌ FCM Token NULL - tidak bisa dikirim');
         }
       } catch (e) {
-        print('⚠️ Gagal mengirim FCM token: $e');
+        print('❌ ERROR kirim FCM token: $e');
       }
 
       return true;
